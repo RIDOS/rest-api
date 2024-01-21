@@ -4,3 +4,6 @@ vendor
 
 # DateBase
 db/*
+
+# IDE
+.vscode

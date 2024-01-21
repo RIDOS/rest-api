@@ -3,7 +3,8 @@
 require_once './vendor/autoload.php';
 
 use App\Controller\NewsController;
+use App\Router;
 
-
-// echo (new NewsController())->index();
-echo (new NewsController())->getOne(2);
+// Маршруты.
+Router::get('/api/news', [NewsController::class, 'index']);
+Router::get('/api/news/:id', [NewsController::class, 'getOne']);

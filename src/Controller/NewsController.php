@@ -1,11 +1,10 @@
 <?php
 
 namespace App\Controller;
+use App\Controller;
 use App\Repository\NewsRepository;
 
-header('Content-Type: application/json');
-
-class NewsController
+class NewsController implements Controller
 {
     public function index(): string
     {
