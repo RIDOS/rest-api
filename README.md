@@ -35,7 +35,9 @@ php -S localhost:2345
 CREATE TABLE "News" 
 (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
-    "title" TEXT, "body" TEXT, "date_create" TEXT
+    "title" TEXT,
+    "body" TEXT,
+    "date_create" TEXT
 );
 
 CREATE UNIQUE INDEX "sqlite_autoindex_News_1" ON "News" (id);
