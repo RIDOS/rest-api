@@ -22,11 +22,20 @@ class News
 
     private ?string $body;
 
-    private ?DateTime $dateCreated;
+    private ?string $dateCreated;
 
     public function __construct()
     {
-        $dateCreated = new DateTime();
+        $this->body = null;
+        $this->title = null;
+        $this->dateCreated = (new DateTime())->format('Y-m-d');
+    }
+
+    public function setId(int $id): static
+    {
+        $this->id = $id;
+
+        return $this;
     }
 
     public function getId(): int
@@ -34,7 +43,7 @@ class News
         return $this->id;
     }
 
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->title;
     }
@@ -46,24 +55,24 @@ class News
         return $this;
     }
 
-    public function getBody(): string
+    public function getBody(): ?string
     {
         return $this->body;
     }
 
     public function setBody(string $body): static
     {
-        $this->title = $body;
+        $this->body = $body;
 
         return $this;
     }
 
-    public function getDateCreate(): DateTime
+    public function getDateCreate(): string
     {
         return $this->dateCreated;
     }
 
-    public function setDateCreate(DateTime $dateCreated): static
+    public function setDateCreate(string $dateCreated): static
     {
         $this->dateCreated = $dateCreated;
 

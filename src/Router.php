@@ -2,8 +2,6 @@
 
 namespace App;
 
-use App\Controller\NewsController;
-
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: *');
 header('Access-Control-Allow-Methods: *');
@@ -17,92 +15,71 @@ header('Content-Type: application/json');
  * для реализации маршрутов.
  * 
  * Например:
- *  Router::get('/api/news', [NewsController::class, 'index']);
- *  Router::post('/api/news', [NewsController::class, 'index']);
+ *  Router::get('/api/news', func() { echo (new ... )->index(); });
+ *  Router::post('/api/news', func(...) { echo (new ... )->post(...); });
  *
- *  Router::get('/api/news/:id', [NewsController::class, 'getOne']);
- *  Router::patch('/api/news/:id', [NewsController::class, 'getOne']);
- *  Router::put('/api/news/:id', [NewsController::class, 'getOne']);
- *  Router::delete('/api/news/:id', [NewsController::class, 'getOne']);
+ *  Router::get('/api/news/:id',  func(int $id) { echo (new ... )->getOne($id); });
+ *  Router::patch('/api/news/:id', func(...) { echo (new ... )->post(...); });
+ *  Router::put('/api/news/:id', func(...) { echo (new ... )->post(...); });
+ *  Router::delete('/api/news/:id', func(...) { echo (new ... )->post(...); });
  * 
  * @author a.imaev <smartsites.dev27@gmail.com>
  */
 class Router
 {
-    public static function get(string $url, array $method): void
+    private static $routes = [];
+
+    public static function addRoute($method, $url, $action)
     {
-        if (Router::isUrl($url))
-        {
-            if (!isset($method[0]))
-            {
-                throw new \Exception('Отсутсвует экземпляр класса.');
-            }
+        self::$routes[] = ['method' => $method, 'url' => $url, 'action' => $action];
+    }
 
-            if (!isset($method[1]))
-            {
-                throw new \Exception('Отсутсвует метод класса.');
-            }
+    public static function get($url, $action)
+    {
+        self::addRoute('GET', $url, $action);
+    }
 
-            $controller = new $method[0]();
-            $action = $method[1];
+    public static function post($url, $action)
+    {
+        self::addRoute('POST', $url, $action);
+    }
 
-            echo $controller->$action();
-        }
+    public static function patch($url, $action)
+    {
+        self::addRoute('PATCH', $url, $action);
+    }
+
+    public static function put($url, $action)
+    {
+        self::addRoute('PUT', $url, $action);
+    }
+
+    public static function delete($url, $action)
+    {
+        self::addRoute('DELETE', $url, $action);
     }
 
     /**
-     * Проверка на сущестование маршрута.
-     * 
-     * @param string $url Маршрут пользователя.
-     * 
-     * @return bool При ошибке, выводит Error,
-     * иначе True.
+     * Обработка входящего запроса и сравнение с указаными маршрутами.
      */
-    private static function isUrl(string $url): bool
+    public static function dispatch()
     {
-        if ($url !== $_SERVER['REQUEST_URI']) {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Не верный контроллер.'
-            ]);
-            return false;
-        }
+        $requestMethod = $_SERVER['REQUEST_METHOD'];
+        $requestUrl = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-        return true;
-    }
+        foreach (self::$routes as $route) {
+            $pattern = "@^" . preg_replace('/\\\:[a-zA-Z0-9\_\-]+/', '([a-zA-Z0-9\-\_]+)', preg_quote($route['url'])) . "$@D";
+            $matches = [];
 
-    /**
-     * Удаляет строку с URL.
-     * 
-     * @param string $url Маршрут.
-     * 
-     * @return string|null В случае успеха выводит строку без парамтра,
-     * иначе null.
-     * 
-     * Пример:
-     *  Input:  '/api/news/:id'
-     *  Output: '/api/news/'
-     *
-     *  Input:  '/api/news/:id/'
-     *  Output: '/api/news/'
-     *  Output: '/api/news/'
-     *
-     *  Input:  '/api/news/2/'
-     *  Output: '/api/news/'
-     */
-    private static function replaceUrl(string $url): string|null
-    {
-        $array = explode('/', $url);
-
-        foreach($array as $key => $value)
-        {
-            if (str_contains($value, ':') || is_numeric($value))
-            {
-                $temp = str_replace($value, '', $url);
-                return str_replace('//', '/', $temp);
+            if ($requestMethod == $route['method'] && preg_match($pattern, $requestUrl, $matches)) {
+                array_shift($matches);
+                call_user_func_array($route['action'], $matches);
+                return;
             }
         }
 
-        return null;
+        // Обработка ситуации, когда маршрут не найден.
+        header("HTTP/1.0 404 Not Found");
+        echo json_encode(['status' => 'error', 'message' => 'Маршрут не найден']);
     }
 }

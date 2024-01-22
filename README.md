@@ -29,3 +29,18 @@ composer install
 ```bash
 php -S localhost:2345
 ```
+
+После чего, следует создать таблицу `News` в файле `/db/db.sqlite3`, со следующими полями:
+```sql
+CREATE TABLE "News" 
+(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
+    "title" TEXT, "body" TEXT, "date_create" TEXT
+);
+
+CREATE UNIQUE INDEX "sqlite_autoindex_News_1" ON "News" (id);
+```
+
+## Пример работы
+
+![Добавление новости.](https://i.imgur.com/o706awI.png)
